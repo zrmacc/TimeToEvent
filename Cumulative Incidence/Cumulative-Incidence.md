@@ -1,19 +1,8 @@
----
-title: "Cumulative Incidence"
-author: "Zachary McCaw"
-date: "12/31/2020"
-output: 
-  html_document: 
-    keep_md: TRUE
----
-
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.align = "center")
-```
 
 # Competing Risks
 
-```{r, message = FALSE, warning = FALSE}
+
+```r
 library(CICs)
 library(cmprsk)
 library(dplyr)
@@ -27,7 +16,8 @@ source("Functions.R")
 
 ## Simulate Competing Risks Data
 
-```{r}
+
+```r
 # Arm 1.
 n1 <- 200
 data1 <- GenData(
@@ -57,7 +47,8 @@ data <- rbind(data1, data0)
 
 ## Estimation of Cumulative Incidence Curve
 
-```{r}
+
+```r
 # Method 1: using cmprsk.
 fit1 <- cmprsk::cuminc(ftime = data1$time, fstatus = data1$status)
 key <- !duplicated(fit1$`1 1`$est)
@@ -83,73 +74,49 @@ v3 <- approxfun(x = c(0, fit3$time), y = c(0, fit3$cov[4, 4, ]), rule = 2)
 
 ### Comparison of Estimators
 
-```{r, echo = FALSE}
-times <- seq(from = 0, to = 5, length = 201)
-est1 <- cic1(times)
-est2 <- cic2(times)
-est3 <- cic3(times)
-
-se1 <- sqrt(v1(times))
-se2 <- sqrt(v2(times))
-se3 <- sqrt(v3(times))
-
-df <- data.frame(times, est1, est2, est3) %>% 
-  pivot_longer(est1:est3, names_to = "method", values_to = "est")
-
-se <- data.frame(times, se1, se2, se3) %>%
-  pivot_longer(se1:se3, names_to = "method", values_to = "se")
-
-df$se <- se$se
-df$lower <- df$est - 2 * df$se
-df$upper <- df$est + 2 * df$se
-df$method <- factor(
-  df$method, 
-  levels = c("est1", "est2", "est3"),
-  labels = c("cmprsk", "CICs", "etm")
-)
-
-q <- ggplot(data = df) + 
-  theme(
-    panel.background = element_blank(),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    strip.background = element_blank()
-  ) +
-  geom_ribbon(
-    aes(x = times, ymin = lower, ymax = upper, fill = method),
-    alpha = 0.2,
-    show.legend = FALSE
-  ) + 
-  geom_line(
-    aes(x = times, y = est, color = method),
-    show.legend = FALSE
-  ) +
-  facet_wrap(
-    ~method
-  ) +
-  labs(
-    x = "Time",
-    y = "Cumulative Event Incidence",
-    title = "Estimated Cumulative Incidence Curves"
-  )
-  show(q)
-```
+<img src="Cumulative-Incidence_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
 ## Cause-Specific Hazards
 
-```{r}
+
+```r
 # Cause-specific hazard of event.
 cs1 <- survival::coxph(Surv(time, status == 1) ~ arm, data = data)
 show(cs1)
+```
 
+```
+## Call:
+## survival::coxph(formula = Surv(time, status == 1) ~ arm, data = data)
+## 
+##        coef exp(coef) se(coef)      z     p
+## arm -0.1537    0.8575   0.1375 -1.118 0.264
+## 
+## Likelihood ratio test=1.26  on 1 df, p=0.2625
+## n= 400, number of events= 215
+```
+
+```r
 # Cause-specific hazard of death.
 cs2 <- survival::coxph(Surv(time, status == 2) ~ arm, data = data)
 show(cs2)
 ```
 
+```
+## Call:
+## survival::coxph(formula = Surv(time, status == 2) ~ arm, data = data)
+## 
+##        coef exp(coef) se(coef)     z     p
+## arm 0.05328   1.05473  0.21493 0.248 0.804
+## 
+## Likelihood ratio test=0.06  on 1 df, p=0.8042
+## n= 400, number of events= 88
+```
+
 Augmenting data to the format required for prediction.
 
-```{r}
+
+```r
 data2 <- rbind(data, data)
 data2$trans <- rep(c(1, 2), each = nrow(data))
 data2$status2 <- 1 * c(data$status == 1, data$status == 2)
@@ -158,16 +125,37 @@ data2$arm2 <- data2$arm * (data2$trans == 2)
 show(data2[data2$id == 1, ])
 ```
 
+```
+##          time status from   to arm id trans status2 arm1 arm2
+## 1   0.1835922      0    0 cens   1  1     1       0    1    0
+## 401 0.1835922      0    0 cens   1  1     2       0    0    1
+```
+
 Recovery for individual cause-specific models using the augmented data.
 
-```{r}
+
+```r
 cs12 <- survival::coxph(Surv(time, status2) ~ arm1 + arm2 + strata(trans), data = data2)
 show(cs12)
 ```
 
+```
+## Call:
+## survival::coxph(formula = Surv(time, status2) ~ arm1 + arm2 + 
+##     strata(trans), data = data2)
+## 
+##          coef exp(coef) se(coef)      z     p
+## arm1 -0.15370   0.85753  0.13748 -1.118 0.264
+## arm2  0.05328   1.05473  0.21493  0.248 0.804
+## 
+## Likelihood ratio test=1.32  on 2 df, p=0.5177
+## n= 800, number of events= 303
+```
+
 ### Prediction of Cumulative Incidence Curves
 
-```{r}
+
+```r
 # New case in arm 1.
 new1 <- data.frame(
   arm1 = c(1, 0),
@@ -202,50 +190,4 @@ ses1 <- approxfun(x = prob1$time, y = prob1$se2)
 ses0 <- approxfun(x = prob0$time, y = prob0$se2)
 ```
 
-```{r, echo = FALSE, warning = FALSE}
-times <- seq(from = 0, to = 5, length = 201)
-est1 <- cic1(times)
-est0 <- cic0(times)
-
-se1 <- ses1(times)
-se0 <- ses0(times)
-
-df <- data.frame(times, est1, est0) %>% 
-  pivot_longer(est1:est0, names_to = "method", values_to = "est")
-
-se <- data.frame(times, se1, se0) %>%
-  pivot_longer(se1:se0, names_to = "method", values_to = "se")
-
-df$se <- se$se
-df$lower <- df$est - 2 * df$se
-df$upper <- df$est + 2 * df$se
-df$method <- factor(
-  df$method, 
-  levels = c("est1", "est0"),
-  labels = c("1", "0")
-)
-
-q <- ggplot(data = df) + 
-  theme(
-    panel.background = element_blank(),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    strip.background = element_blank()
-  ) +
-  geom_ribbon(
-    aes(x = times, ymin = lower, ymax = upper, fill = method),
-    alpha = 0.2
-  ) + 
-  geom_line(
-    aes(x = times, y = est, color = method)
-  ) +
-  labs(
-    x = "Time",
-    y = "Cumulative Incidence",
-    color = "Arm",
-    fill = "Arm",
-    title = "Predicted Cumulative Event Incidence"
-  )
-  show(q)
-
-```
+<img src="Cumulative-Incidence_files/figure-html/unnamed-chunk-9-1.png" style="display: block; margin: auto;" />

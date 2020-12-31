@@ -1,18 +1,22 @@
 ---
-title: "Multistate Examples"
+title: "Multistate Models"
 author: "Zachary McCaw"
 date: "Updated: 2020-12-31"
-output: html_document
+output: 
+  html_document: 
+    keep_md: TRUE
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.align = "center")
 ```
 
+# Multistate Models
+
 ```{r}
 library(cowplot)
 library(ggplot2)
-source("Multistate Functions.R")
+source("Functions.R")
 ```
 
 ## Simulate Illness-Death Data
