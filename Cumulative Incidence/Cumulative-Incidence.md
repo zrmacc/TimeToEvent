@@ -1,4 +1,3 @@
-
 # Competing Risks
 
 
@@ -90,10 +89,10 @@ show(cs1)
 ## survival::coxph(formula = Surv(time, status == 1) ~ arm, data = data)
 ## 
 ##        coef exp(coef) se(coef)      z     p
-## arm -0.1537    0.8575   0.1375 -1.118 0.264
+## arm -0.1479    0.8626   0.1373 -1.077 0.282
 ## 
-## Likelihood ratio test=1.26  on 1 df, p=0.2625
-## n= 400, number of events= 215
+## Likelihood ratio test=1.16  on 1 df, p=0.2811
+## n= 400, number of events= 216
 ```
 
 ```r
@@ -107,9 +106,9 @@ show(cs2)
 ## survival::coxph(formula = Surv(time, status == 2) ~ arm, data = data)
 ## 
 ##        coef exp(coef) se(coef)     z     p
-## arm 0.05328   1.05473  0.21493 0.248 0.804
+## arm 0.06353   1.06559  0.21404 0.297 0.767
 ## 
-## Likelihood ratio test=0.06  on 1 df, p=0.8042
+## Likelihood ratio test=0.09  on 1 df, p=0.7665
 ## n= 400, number of events= 88
 ```
 
@@ -127,11 +126,11 @@ show(data2[data2$id == 1, ])
 
 ```
 ##          time status from   to arm id trans status2 arm1 arm2
-## 1   0.1835922      0    0 cens   1  1     1       0    1    0
-## 401 0.1835922      0    0 cens   1  1     2       0    0    1
+## 1   0.1275238      0    0 cens   1  1     1       0    1    0
+## 401 0.1275238      0    0 cens   1  1     2       0    0    1
 ```
 
-Recovery for individual cause-specific models using the augmented data.
+Recovery of the individual cause-specific models using the augmented data.
 
 
 ```r
@@ -145,11 +144,11 @@ show(cs12)
 ##     strata(trans), data = data2)
 ## 
 ##          coef exp(coef) se(coef)      z     p
-## arm1 -0.15370   0.85753  0.13748 -1.118 0.264
-## arm2  0.05328   1.05473  0.21493  0.248 0.804
+## arm1 -0.14786   0.86255  0.13734 -1.077 0.282
+## arm2  0.06353   1.06559  0.21404  0.297 0.767
 ## 
-## Likelihood ratio test=1.32  on 2 df, p=0.5177
-## n= 800, number of events= 303
+## Likelihood ratio test=1.25  on 2 df, p=0.5353
+## n= 800, number of events= 304
 ```
 
 ### Prediction of Cumulative Incidence Curves

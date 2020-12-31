@@ -158,7 +158,7 @@ data2$arm2 <- data2$arm * (data2$trans == 2)
 show(data2[data2$id == 1, ])
 ```
 
-Recovery for individual cause-specific models using the augmented data.
+Recovery of the individual cause-specific models using the augmented data.
 
 ```{r}
 cs12 <- survival::coxph(Surv(time, status2) ~ arm1 + arm2 + strata(trans), data = data2)
